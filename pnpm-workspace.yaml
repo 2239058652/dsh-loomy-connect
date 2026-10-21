@@ -1,0 +1,8 @@
+# Ships with the package so `pnpm install` works when this repo is consumed
+# as a git-hosted dependency: without it, pnpm's default supply-chain policy
+# (minimumReleaseAge) rejects the freshly published 0.1.5-rc.* packages pinned
+# in pnpm-lock.yaml, and the package's own postinstall builds stay blocked.
+minimumReleaseAge: 0
+allowBuilds:
+  '@google/genai': true
+  protobufjs: true
