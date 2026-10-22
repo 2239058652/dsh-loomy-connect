@@ -159,18 +159,41 @@ export function parseLoomyModels(text: string): readonly LoomyModel[] {
 export class LoomyCatalog {
   private served: readonly LoomyModel[] = FALLBACK
   private discovered: readonly LoomyModel[] = FALLBACK
+  private blocked: readonly string[] = []
 
-  /** Models DSH can actually call. */
+  /** Models DSH can actually call: text models the user has not disabled. */
   current(): readonly LoomyModel[] { return this.served }
 
   /** Everything Loomy lists, image generators included, for the card to show. */
   all(): readonly LoomyModel[] { return this.discovered }
 
+  /** The ids the user switched off, as the profile stored them. */
+  blockedIds(): readonly string[] { return this.blocked }
+
+  /** Whether the user switched this model off in the plugin's own settings. */
+  isBlocked(id: string): boolean { return this.blocked.includes(id) }
+
+  /**
+   * Apply the user's disabled-model list.
+   *
+   * The filter runs over whatever the catalog holds, so it survives a refresh:
+   * `accept()` recomputes the served list from the same set. Disabling every
+   * model legitimately leaves nothing served — the provider then offers no
+   * models, which is what the switch means.
+   */
+  setBlocked(ids: readonly string[]): void {
+    this.blocked = [...ids]
+    this.recompute()
+  }
+
+  private recompute(): void {
+    this.served = this.discovered.filter(model => model.image !== true && !this.blocked.includes(model.id))
+  }
+
   private accept(models: readonly LoomyModel[]): void {
     if (models.length === 0) return
     this.discovered = models
-    const text = models.filter(model => model.image !== true)
-    if (text.length > 0) this.served = text
+    this.recompute()
   }
 
   async refreshFromApi(credential: LoomyCredential, signal?: AbortSignal): Promise<void> {

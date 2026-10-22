@@ -30,6 +30,8 @@ export interface LoomyStatusRouteOptions {
   modelCount: () => number
   /** Every model the account can reach, for the card to list with its rate. */
   models?: () => LoomyWebModel[]
+  /** Ids the user switched off, so the card can mark them without guessing. */
+  blockedModels?: () => readonly string[]
   /**
    * Re-pull the catalog and drop the memoized points read. Called for an
    * explicit refresh only — the card's polling pass must stay cheap.
@@ -79,11 +81,15 @@ export async function loomyWebStatus(deps: LoomyStatusRouteOptions, force = fals
     return { status: 'signed-out' }
   }
   if (credential === undefined) return { status: 'signed-out' }
+  const blocked = deps.blockedModels?.() ?? []
   const models = deps.models?.()
   const status: LoomyWebStatus = {
     status: 'signed-in',
     modelCount: deps.modelCount(),
-    ...models === undefined || models.length === 0 ? {} : { models },
+    ...models === undefined || models.length === 0
+      ? {}
+      : { models: models.map(model => model.image === true ? model : { ...model, disabled: blocked.includes(model.id) }) },
+    ...blocked.length === 0 ? {} : { blockedModels: [...blocked] },
     ...credential.maskedPhone === undefined ? {} : { account: credential.maskedPhone },
   }
   try {

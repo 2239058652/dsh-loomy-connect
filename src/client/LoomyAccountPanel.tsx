@@ -69,10 +69,12 @@ function promoLabel(promo: string, t: Translate): string {
 }
 
 function renderModelRow(model: LoomyWebModel, t: Translate): ReactElement {
+  const off = model.disabled === true
   return (
     <div key={model.id} className={CSS.tableRow} role="row">
       <span className={CSS.tableCell} role="gridcell">
-        <span className={CSS.listName}>{modelName(model.name)}</span>
+        <span className={off ? `${CSS.listName} ${CSS.listNameOff}` : CSS.listName}>{modelName(model.name)}</span>
+        {off ? <span className={CSS.pillOff}>{t('badgeDisabled')}</span> : null}
       </span>
       <span className={CSS.tableCell} role="gridcell">
         {model.contextWindow === undefined
@@ -224,6 +226,9 @@ export function LoomyAccountPanel({ t, status, busy, onRefresh }: LoomyAccountPa
                         {models.filter(model => model.image === true).map(model => renderModelRow(model, t))}
                       </div>
                     )}
+                  {models === undefined
+                    ? null
+                    : <p className={CSS.hint}>{t('disableModelsWhere')}</p>}
                 </div>
               )}
           </>

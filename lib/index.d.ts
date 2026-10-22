@@ -87,10 +87,25 @@ declare function parseLoomyModels(text: string): readonly LoomyModel[];
 declare class LoomyCatalog {
   private served;
   private discovered;
-  /** Models DSH can actually call. */
+  private blocked;
+  /** Models DSH can actually call: text models the user has not disabled. */
   current(): readonly LoomyModel[];
   /** Everything Loomy lists, image generators included, for the card to show. */
   all(): readonly LoomyModel[];
+  /** The ids the user switched off, as the profile stored them. */
+  blockedIds(): readonly string[];
+  /** Whether the user switched this model off in the plugin's own settings. */
+  isBlocked(id: string): boolean;
+  /**
+   * Apply the user's disabled-model list.
+   *
+   * The filter runs over whatever the catalog holds, so it survives a refresh:
+   * `accept()` recomputes the served list from the same set. Disabling every
+   * model legitimately leaves nothing served — the provider then offers no
+   * models, which is what the switch means.
+   */
+  setBlocked(ids: readonly string[]): void;
+  private recompute;
   private accept;
   refreshFromApi(credential: LoomyCredential, signal?: AbortSignal): Promise<void>;
   refreshFromFile(configFile?: string): Promise<void>;
@@ -246,6 +261,11 @@ interface LoomyWebModel {
    * the card renders that as `未提供` rather than guessing.
    */
   contextWindow?: number;
+  /**
+   * True when the user switched this model off. The card still lists it so it
+   * can be switched back on; the provider never serves it.
+   */
+  disabled?: boolean;
 }
 /** The JSON document the plugin card renders. */
 type LoomyWebStatus = {
@@ -254,7 +274,8 @@ type LoomyWebStatus = {
   status: 'signed-in'; /** Masked sign-in identity (Loomy stores a masked phone number). */
   account?: string; /** How many models the plugin is currently serving. */
   modelCount: number; /** Every model the account can reach, including image generators. */
-  models?: LoomyWebModel[];
+  models?: LoomyWebModel[]; /** Ids the user switched off, in the order the profile stores them. */
+  blockedModels?: string[];
   points?: LoomyWebPoints;
   pointsError?: string;
 } | {
@@ -273,6 +294,8 @@ interface LoomyStatusRouteOptions {
   modelCount: () => number;
   /** Every model the account can reach, for the card to list with its rate. */
   models?: () => LoomyWebModel[];
+  /** Ids the user switched off, so the card can mark them without guessing. */
+  blockedModels?: () => readonly string[];
   /**
    * Re-pull the catalog and drop the memoized points read. Called for an
    * explicit refresh only — the card's polling pass must stay cheap.
@@ -310,9 +333,11 @@ declare const inject: string[];
 declare const Config: Schema<Schemastery.ObjectS<NoInfer<{
   authFile: Schema<string, string, "volatile">;
   configFile: Schema<string, string, "volatile">;
+  disabledModels: Schema<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
 }>>, Schemastery.ObjectT<NoInfer<{
   authFile: Schema<string, string, "volatile">;
   configFile: Schema<string, string, "volatile">;
+  disabledModels: Schema<NoInfer<string[]>, NoInfer<string[]>, "volatile-defined">;
 }>>, "plain">;
 /** One config field: a plain value, or a reference the loader commits into. */
 type Field<T> = T | {
@@ -322,6 +347,7 @@ type Field<T> = T | {
 interface ConfigShape {
   authFile?: Field<string>;
   configFile?: Field<string>;
+  disabledModels?: Field<string[]>;
 }
 declare function apply(ctx: Context, config?: ConfigShape): void;
 //#endregion

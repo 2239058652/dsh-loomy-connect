@@ -45,6 +45,15 @@ export const en = {
   saved: 'Saved',
   saveFailed: 'Save failed',
   namespaceUnavailable: 'Configuration is read-only right now.',
+  badgeDisabled: 'Disabled',
+  disableModelsHeading: 'Disabled models',
+  disableModelsHint: 'Unticked models disappear from DSH’s model picker. Changes apply immediately, without a restart.',
+  disableModelsEmpty: 'Loomy reported no chat models yet — refresh once the desktop app is signed in.',
+  disableModelsCount: '{count} disabled',
+  disableModelsWhere: 'Untick a model on this plugin’s llm-loomy row page to hide it from the picker.',
+  modelsSaved: 'Applied',
+  modelsSwitchTitle: 'Enable or disable models',
+  modelsSwitchWhere: 'Open the llm-loomy row under “Included plugins” below — click the row name itself, not the bundle title — then use “Disabled models” at the bottom of that page.',
 } as const
 
 export const zh = {
@@ -92,6 +101,15 @@ export const zh = {
   saved: '已保存',
   saveFailed: '保存失败',
   namespaceUnavailable: '当前配置为只读。',
+  badgeDisabled: '已禁用',
+  disableModelsHeading: '禁用的模型',
+  disableModelsHint: '取消勾选的模型会从 DSH 的模型选择器中消失，保存后立即生效，无需重启。',
+  disableModelsEmpty: '还没有读到 Loomy 的对话模型 —— 在桌面 App 登录后刷新一次。',
+  disableModelsCount: '已禁用 {count} 个',
+  disableModelsWhere: '在本插件的 llm-loomy 行配置页取消勾选某个模型，即可把它从选择器里隐藏。',
+  modelsSaved: '已生效',
+  modelsSwitchTitle: '启用 / 禁用模型',
+  modelsSwitchWhere: '在下方「包含的组件」里点开 llm-loomy 这一行（点行名，不是上面的插件标题），页面最下方就是「禁用的模型」。',
 } as const
 
 export type LoomySettingsKey = keyof typeof en

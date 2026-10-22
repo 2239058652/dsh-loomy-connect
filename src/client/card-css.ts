@@ -67,6 +67,18 @@ export const CSS = {
   fieldLabel: 'dlc_fieldLabel',
   input: 'dlc_input',
   actions: 'dlc_actions',
+  switchList: 'dlc_switchList',
+  switchRow: 'dlc_switchRow',
+  switchBox: 'dlc_switchBox',
+  switchLabel: 'dlc_switchLabel',
+  switchId: 'dlc_switchId',
+  listNameOff: 'dlc_listNameOff',
+  pillOff: 'dlc_pillOff',
+  callout: 'dlc_callout',
+  calloutHead: 'dlc_calloutHead',
+  calloutTitle: 'dlc_calloutTitle',
+  calloutCount: 'dlc_calloutCount',
+  calloutText: 'dlc_calloutText',
 } as const
 
 const STYLESHEET = `
@@ -149,6 +161,25 @@ const STYLESHEET = `
 .dlc_input:focus{border-color:var(--dsw-alias-state-business-primary);box-shadow:inset 0 0 0 .5px var(--dsw-alias-state-business-primary)}
 .dlc_input:disabled{opacity:.6;cursor:not-allowed}
 .dlc_actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+/* Disabled-model switch: one row per chat model, name and id on one line so a
+   long id cannot push the checkbox out of alignment. */
+.dlc_switchList{display:flex;flex-direction:column;gap:2px;margin-top:4px}
+.dlc_switchRow{align-items:center;gap:10px;display:flex;padding:6px 8px;border-radius:8px;cursor:pointer;min-width:0}
+.dlc_switchRow:hover{background:var(--dsw-alias-bg-layer-3)}
+.dlc_switchBox{flex:none;width:16px;height:16px;margin:0;accent-color:var(--dsw-alias-brand-primary);cursor:pointer}
+.dlc_switchBox:disabled{cursor:not-allowed}
+.dlc_switchLabel{color:var(--dsw-alias-label-primary);font-size:13px;line-height:1.5;flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dlc_switchId{color:var(--dsw-alias-label-tertiary);font-size:12px;line-height:1.5;margin-left:auto;flex:none;font-variant-numeric:tabular-nums}
+/* A disabled model stays listed on the card, dimmed, so it can be restored. */
+.dlc_listNameOff{color:var(--dsw-alias-label-tertiary);text-decoration:line-through}
+.dlc_pillOff{padding:1px 8px;border-radius:999px;font-size:11px;line-height:18px;white-space:nowrap;background:var(--dsw-alias-bg-layer-4,rgba(127,127,127,.16));color:var(--dsw-alias-label-tertiary)}
+/* Banner pointing at the row configuration page. It carries the only visible
+   label for a control DSH itself renders as a quiet row-id button. */
+.dlc_callout{border:.5px solid var(--dsw-alias-border-l4);border-left:2px solid var(--dsw-alias-brand-primary);border-radius:8px;background:var(--dsw-alias-bg-layer-3);padding:10px 14px;display:flex;flex-direction:column;gap:4px}
+.dlc_calloutHead{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.dlc_calloutTitle{color:var(--dsw-alias-label-primary);font-size:13px;font-weight:600;line-height:1.5}
+.dlc_calloutCount{padding:1px 8px;border-radius:999px;font-size:11px;line-height:18px;font-variant-numeric:tabular-nums;background:var(--dsw-alias-bg-layer-4,rgba(127,127,127,.16));color:var(--dsw-alias-label-secondary)}
+.dlc_calloutText{color:var(--dsw-alias-label-secondary);margin:0;font-size:12px;line-height:1.6}
 `
 
 /**

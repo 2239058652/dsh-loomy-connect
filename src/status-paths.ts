@@ -30,6 +30,11 @@ export interface LoomyWebModel {
    * the card renders that as `未提供` rather than guessing.
    */
   contextWindow?: number
+  /**
+   * True when the user switched this model off. The card still lists it so it
+   * can be switched back on; the provider never serves it.
+   */
+  disabled?: boolean
 }
 
 /** The JSON document the plugin card renders. */
@@ -43,6 +48,8 @@ export type LoomyWebStatus =
     modelCount: number
     /** Every model the account can reach, including image generators. */
     models?: LoomyWebModel[]
+    /** Ids the user switched off, in the order the profile stores them. */
+    blockedModels?: string[]
     points?: LoomyWebPoints
     pointsError?: string
   }

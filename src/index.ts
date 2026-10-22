@@ -30,6 +30,10 @@ export const Config = Schema.object({
   configFile: Schema.string()
     .description('Loomy model configuration file (defaults to the app\'s own location)')
     .volatile(),
+  disabledModels: Schema.array(Schema.string())
+    .description('Model ids to hide from DSH; toggled on the plugin page')
+    .default([])
+    .volatile(),
 })
 
 /** One config field: a plain value, or a reference the loader commits into. */
@@ -39,6 +43,7 @@ type Field<T> = T | { get(): T } | undefined
 export interface ConfigShape {
   authFile?: Field<string>
   configFile?: Field<string>
+  disabledModels?: Field<string[]>
 }
 
 /**
@@ -54,9 +59,25 @@ function readField<T>(value: Field<T>): T | undefined {
 /** Minimum gap between two forced refreshes; each one costs an upstream call. */
 const REFRESH_THROTTLE_MS = 5_000
 
+/**
+ * Whether every edited path belongs to the disabled-model switch.
+ *
+ * Such an edit changes only which of the already-discovered models the provider
+ * exposes, so it applies without re-reading Loomy. An empty path list is not
+ * considered here — the caller filters that out first.
+ */
+function touchesOnlyDisabled(paths: readonly (readonly string[])[]): boolean {
+  return paths.every(path => path[0] === 'disabledModels')
+}
+
 export function apply(ctx: Context, config: ConfigShape = {}): void {
   const authFile = (): string | undefined => readField(config.authFile)
   const configFile = (): string | undefined => readField(config.configFile)
+  const disabledModels = (): readonly string[] => {
+    const value = readField(config.disabledModels)
+    if (!Array.isArray(value)) return []
+    return value.filter((id): id is string => typeof id === 'string' && id !== '')
+  }
 
   // The settings namespace in DSH 0.2.x is the loader entry id, not the
   // provider route. Both the provider card and the row configuration page key
@@ -68,6 +89,10 @@ export function apply(ctx: Context, config: ConfigShape = {}): void {
   const settingsNs = entryId ?? LOOMY_ENTRY_ID
 
   const catalog = new LoomyCatalog()
+  // The switch is read before the provider is created and again on every
+  // volatile write, so a model disabled from the row page leaves the provider
+  // without needing a restart.
+  catalog.setBlocked(disabledModels())
   const shim = createLoomyShim({ catalog, authFile, logger: ctx.logger })
 
   // The settings card lives in the browser, so it needs a host route to ask.
@@ -78,6 +103,7 @@ export function apply(ctx: Context, config: ConfigShape = {}): void {
     },
     points: () => readLoomyPoints(),
     modelCount: () => catalog.current().length,
+    blockedModels: () => [...disabledModels()],
     models: () => catalog.all().map(model => ({
       id: model.id,
       name: model.name,
@@ -98,7 +124,7 @@ export function apply(ctx: Context, config: ConfigShape = {}): void {
   }))
 
   // Set once the provider is live, so an early refresh request is a no-op.
-  let reapply: (() => Promise<void>) | undefined
+  let reapply: ((refreshCatalog?: boolean) => Promise<void>) | undefined
   let lastRefresh = 0
   let closed = false
 
@@ -115,7 +141,10 @@ export function apply(ctx: Context, config: ConfigShape = {}): void {
     'loader/volatile-update' as never,
     ((paths: readonly (readonly string[])[]) => {
       if (paths.length === 0) return
-      void reapply?.()
+      // A disabled-model edit changes what the provider serves, not what Loomy
+      // offers, so it must not cost an upstream catalog re-pull.
+      catalog.setBlocked(disabledModels())
+      void reapply?.(!touchesOnlyDisabled(paths))
     }) as never,
   ))
 
@@ -132,8 +161,11 @@ export function apply(ctx: Context, config: ConfigShape = {}): void {
       declared: false,
     }])
     ctx.effect(() => () => { releaseAdapter(); releaseDirectory() })
-    reapply = async () => {
+    reapply = async (refreshCatalog = true) => {
       if (closed) return
+      // A disabled-model edit only changes what the provider exposes, so the
+      // adapter is refreshed without paying for an upstream catalog call.
+      if (!refreshCatalog) { loomy.invalidate(); return }
       // Loomy's own list is authoritative and carries the rates; the generated
       // OpenCode config is the fallback when the API cannot be reached.
       try {
