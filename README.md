@@ -54,18 +54,32 @@
 | **Loomy 桌面应用** | 已安装，且至少登录过一次 |
 | **DeepSeek Harness** | `>= 0.2.1-rc.2 < 0.3.0` |
 | **Node.js** | `>= 22.19` |
+| **pnpm** | 必需。`dsh plugin` 内部通过 pnpm 管理 profile 依赖，只装有 npm 不够 |
 
-从本地目录安装：
+### 从 GitHub 安装（推荐）
 
 ```sh
-dsh plugin --profile web add /绝对路径/dsh-loomy-connect
+dsh plugin --profile web add github:2239058652/dsh-loomy-connect
 dsh web
 ```
 
-发布到自己的仓库后，也可以直接从 Git 安装（把地址换成你的 fork）：
+本仓库已提交构建产物 `lib/`，安装时**不会**触发构建，无需 tsdown 或 TypeScript。
+
+没有全局 `dsh` 时，把 `dsh` 换成以下任一即可（两者都只是下载 dsh 本身，插件安装仍走 pnpm）：
 
 ```sh
-dsh plugin --profile web add github:<你的账号>/dsh-loomy-connect
+npx @deepseek-ai/dsh plugin --profile web add github:2239058652/dsh-loomy-connect
+pnpm dlx @deepseek-ai/dsh plugin --profile web add github:2239058652/dsh-loomy-connect
+```
+
+### 从本地目录安装（改代码时）
+
+```sh
+git clone https://github.com/2239058652/dsh-loomy-connect.git
+cd dsh-loomy-connect
+pnpm install
+pnpm run build          # 仅改了 src/ 时需要，产物在 lib/
+dsh plugin --profile web add /绝对路径/dsh-loomy-connect
 dsh web
 ```
 

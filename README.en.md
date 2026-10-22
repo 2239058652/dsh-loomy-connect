@@ -54,18 +54,32 @@ The plugin reads Loomy's on-disk sign-in session and model manifest read-only. N
 | **Loomy desktop app** | Installed and signed in at least once |
 | **DeepSeek Harness** | `>= 0.2.1-rc.2 < 0.3.0` |
 | **Node.js** | `>= 22.19` |
+| **pnpm** | Required. `dsh plugin` manages profile dependencies through pnpm; having only npm is not enough |
 
-From a local checkout:
+### From GitHub (recommended)
 
 ```sh
-dsh plugin --profile web add /absolute/path/to/dsh-loomy-connect
+dsh plugin --profile web add github:2239058652/dsh-loomy-connect
 dsh web
 ```
 
-After publishing to your own repository, install it from Git (replace the URL with your fork):
+This repository commits its build output in `lib/`, so installing does **not** run a build — no tsdown or TypeScript needed.
+
+Without a global `dsh`, replace `dsh` with either of the following (both only fetch dsh itself; the plugin install still goes through pnpm):
 
 ```sh
-dsh plugin --profile web add github:<your-account>/dsh-loomy-connect
+npx @deepseek-ai/dsh plugin --profile web add github:2239058652/dsh-loomy-connect
+pnpm dlx @deepseek-ai/dsh plugin --profile web add github:2239058652/dsh-loomy-connect
+```
+
+### From a local checkout (when editing code)
+
+```sh
+git clone https://github.com/2239058652/dsh-loomy-connect.git
+cd dsh-loomy-connect
+pnpm install
+pnpm run build          # only needed after editing src/; output goes to lib/
+dsh plugin --profile web add /absolute/path/to/dsh-loomy-connect
 dsh web
 ```
 

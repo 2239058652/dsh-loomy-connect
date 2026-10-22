@@ -48,7 +48,6 @@
   },
   "scripts": {
     "build": "tsdown",
-    "prepare": "tsdown",
     "typecheck": "tsc -p tsconfig.json && tsc -p tsconfig.client.json",
     "check": "pnpm run typecheck && pnpm run build"
   },

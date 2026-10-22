@@ -1,8 +1,15 @@
-# Ships with the package so `pnpm install` works when this repo is consumed
-# as a git-hosted dependency: without it, pnpm's default supply-chain policy
-# (minimumReleaseAge) rejects the freshly published 0.1.5-rc.* packages pinned
-# in pnpm-lock.yaml, and the package's own postinstall builds stay blocked.
-minimumReleaseAge: 0
+packages:
+  - .
+
+# pnpm's minimumReleaseAge policy rejects lockfile entries published within the
+# cutoff window. The tsdown/rolldown toolchain in pnpm-lock.yaml was published
+# inside that window, so `pnpm install` in a fresh clone would otherwise fail
+# with ERR_PNPM_MINIMUM_RELEASE_AGE_VIOLATION. Exempt only those packages rather
+# than switching the policy off for everything.
+minimumReleaseAgeExclude:
+  - rolldown
+  - '@rolldown/*'
+
 allowBuilds:
   '@google/genai': true
   protobufjs: true

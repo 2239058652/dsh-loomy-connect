@@ -4,10 +4,6 @@ node_modules/
 
 # lib/ is tracked on purpose: DSH loads the plugin straight from this directory,
 # so committing it lets `dsh plugin add <git-url>` work with no build step.
-# Run `pnpm run build` (or install via git, which triggers `prepare`) after
+# There is deliberately no `prepare` script, so a Git install downloads the
+# committed output instead of trying to build it. Run `pnpm run build` after
 # editing src/, and commit the rebuilt output along with it.
-
-# Machine-local pnpm config: registry mirror and the release-age exemptions that
-# this machine needs for the freshly published 0.1.5-rc.* packages. Not part of
-# the project.
-pnpm-workspace.yaml
