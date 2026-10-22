@@ -4,6 +4,8 @@
 
 [简体中文](README.md) | English
 
+> **Derivative notice**: this project is a fork of [gdrpzym/dsh-loomy-connect](https://github.com/gdrpzym/dsh-loomy-connect), upstream baseline `0.2.0` (MIT, original copyright held by `gdrpzym`), adapted here to DSH 0.2.1. See [FORK.md](FORK.md) for the change list and licensing.
+
 Exposes the text models bundled with the **Loomy** desktop app to [DeepSeek Harness](https://github.com/deepseek-ai) (DSH), without an API key.
 
 The plugin reads Loomy's on-disk sign-in session and model manifest read-only. Nothing is copied, uploaded, or rewritten.
@@ -15,6 +17,7 @@ The plugin reads Loomy's on-disk sign-in session and model manifest read-only. N
 
 ## Contents
 
+- [Derivative notice (FORK.md)](FORK.md)
 - [Features](#features)
 - [Installation](#installation)
 - [Configuration](#configuration)
@@ -141,4 +144,5 @@ Architecture, gateway, and browser-card constraints are documented in [docs/inte
 
 ## Acknowledgments
 
-The DSH provider architecture follows [dsh-workbuddy-connect](https://github.com/corrinehu/dsh-workbuddy-connect) (MIT).
+- [gdrpzym/dsh-loomy-connect](https://github.com/gdrpzym/dsh-loomy-connect) (MIT): the upstream baseline `0.2.0` this fork derives from, and the origin of the provider registration, loopback gateway, credential parsing, model catalog, and credits reading.
+- The DSH provider architecture follows [dsh-workbuddy-connect](https://github.com/corrinehu/dsh-workbuddy-connect) (MIT).

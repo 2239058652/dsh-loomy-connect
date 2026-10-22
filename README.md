@@ -4,6 +4,8 @@
 
 简体中文 | [English](README.en.md)
 
+> **派生声明**：本项目是 [gdrpzym/dsh-loomy-connect](https://github.com/gdrpzym/dsh-loomy-connect) 的衍生版本，上游基线 `0.2.0`（MIT，原始版权归 `gdrpzym` 所有），本仓库将其适配到 DSH 0.2.1。改动范围与许可说明见 [FORK.md](FORK.md)。
+
 将 **Loomy** 桌面应用内置的文本模型接入 [DeepSeek Harness](https://github.com/deepseek-ai)（DSH），无需 API Key。
 
 插件以只读方式读取 Loomy 落盘的登录态与模型清单，不复制、不上传、不改写任何文件。
@@ -15,6 +17,7 @@
 
 ## 目录
 
+- [派生说明（FORK.md）](FORK.md)
 - [功能](#功能)
 - [安装](#安装)
 - [配置](#配置)
@@ -141,4 +144,5 @@ dsh --profile web --dump-config     # 应出现 llm-loomy 条目
 
 ## 致谢
 
-DSH provider 架构参考 [dsh-workbuddy-connect](https://github.com/corrinehu/dsh-workbuddy-connect)（MIT）。
+- [gdrpzym/dsh-loomy-connect](https://github.com/gdrpzym/dsh-loomy-connect)（MIT）：本项目的上游基线 `0.2.0`，provider 注册、回环网关、登录态解析、模型目录与积分读取的实现来源。
+- DSH provider 架构参考 [dsh-workbuddy-connect](https://github.com/corrinehu/dsh-workbuddy-connect)（MIT）。

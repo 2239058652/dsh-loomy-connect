@@ -30,11 +30,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gdrpzym/dsh-loomy-connect.git"
+    "url": "git+https://github.com/2239058652/dsh-loomy-connect.git"
   },
-  "homepage": "https://github.com/gdrpzym/dsh-loomy-connect#readme",
+  "homepage": "https://github.com/2239058652/dsh-loomy-connect#readme",
   "bugs": {
-    "url": "https://github.com/gdrpzym/dsh-loomy-connect/issues"
+    "url": "https://github.com/2239058652/dsh-loomy-connect/issues"
   },
   "keywords": [
     "dsh-plugin",
