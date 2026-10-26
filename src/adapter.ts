@@ -1,7 +1,8 @@
 import { createProvider } from '@earendil-works/pi-ai'
 import type { Api, AuthContext, CredentialStore, Model, ModelThinkingLevel, Provider, ThinkingLevelMap } from '@earendil-works/pi-ai'
 import { openAICompletionsApi } from '@earendil-works/pi-ai/api/openai-completions.lazy'
-import { resolveRetryPolicy } from '@deepseek-ai/dsh-llm'
+import { resolveImageAttachmentAccess, resolveRetryPolicy } from '@deepseek-ai/dsh-llm'
+import type { AttachmentStore } from '@deepseek-ai/dsh-attachment'
 import { PiAiAdapter, type ResolvedPiAiProviderProfile } from '@deepseek-ai/dsh-llm-pi-ai'
 import { LOOMY_PROVIDER } from './entry-id.ts'
 import type { LoomyCatalog, LoomyModel } from './catalog.ts'
@@ -36,7 +37,28 @@ export interface LoomyAdapter {
   invalidate(): void
 }
 
-export function createLoomyAdapter(catalog: LoomyCatalog, shim: LoomyShim): LoomyAdapter {
+/**
+ * The services the adapter reads at request time.
+ *
+ * Both are looked up through `ctx.get` on every call rather than captured once,
+ * because `attachments` and `fs` are optional services a profile may mount or
+ * replace while this plugin keeps running.
+ */
+export interface LoomyAdapterServices {
+  /**
+   * Durable attachment service. Without it pi-ai refuses image input outright,
+   * before the gateway is ever reached.
+   */
+  attachments: () => AttachmentStore | undefined
+  /** Maps a stored host path into the path the model tool can read. */
+  processPathFromHostPath: ((hostPath: string) => string | undefined) | undefined
+}
+
+export function createLoomyAdapter(
+  catalog: LoomyCatalog,
+  shim: LoomyShim,
+  services: LoomyAdapterServices,
+): LoomyAdapter {
   const models = (): Model<Api>[] => catalog.current().map(model => modelFields(model, `${shim.baseUrl()}/v1`))
   const base = createProvider({
     id: LOOMY_PROVIDER, name: 'Loomy', models: models(), api: openAICompletionsApi(),
@@ -67,6 +89,19 @@ export function createLoomyAdapter(catalog: LoomyCatalog, shim: LoomyShim): Loom
     maxRequestImageBytes: 20_971_520, requestImagePixelBudget: 4_194_304, requestImageMaxBytes: 1_048_576, piProvider: provider,
   }
   let profiles = new Map([[LOOMY_PROVIDER, profile]])
-  const adapter = new PiAiAdapter({ profiles: () => profiles, auth: inertAuth, resolveApiKey: async () => shim.token() })
+  // Without these two hooks the adapter throws UNSUPPORTED_CONTENT on any
+  // message carrying an image, before the gateway is ever reached: pi-ai has no
+  // way to turn a durable attachment reference into the bytes it must inline.
+  const adapter = new PiAiAdapter({
+    profiles: () => profiles,
+    auth: inertAuth,
+    resolveApiKey: async () => shim.token(),
+    resolveAttachments: () => services.attachments(),
+    resolveImageAccess: (attachments, ref) => resolveImageAttachmentAccess(
+      attachments,
+      hostPath => services.processPathFromHostPath?.(hostPath),
+      ref,
+    ),
+  })
   return { adapter, invalidate() { profiles = new Map([[LOOMY_PROVIDER, profile]]) } }
 }

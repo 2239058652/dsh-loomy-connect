@@ -2,6 +2,7 @@ import Schema from "@deepseek-ai/schemastery";
 import { PiAiAdapter } from "@deepseek-ai/dsh-llm-pi-ai";
 import { IncomingMessage, ServerResponse } from "node:http";
 import { Context } from "@deepseek-ai/cordis";
+import { AttachmentStore } from "@deepseek-ai/dsh-attachment";
 
 //#region src/entry-id.d.ts
 /**
@@ -142,7 +143,23 @@ interface LoomyAdapter {
   /** Rebuild the adapter's provider snapshot; call after a catalog update. */
   invalidate(): void;
 }
-declare function createLoomyAdapter(catalog: LoomyCatalog, shim: LoomyShim): LoomyAdapter;
+/**
+ * The services the adapter reads at request time.
+ *
+ * Both are looked up through `ctx.get` on every call rather than captured once,
+ * because `attachments` and `fs` are optional services a profile may mount or
+ * replace while this plugin keeps running.
+ */
+interface LoomyAdapterServices {
+  /**
+   * Durable attachment service. Without it pi-ai refuses image input outright,
+   * before the gateway is ever reached.
+   */
+  attachments: () => AttachmentStore | undefined;
+  /** Maps a stored host path into the path the model tool can read. */
+  processPathFromHostPath: ((hostPath: string) => string | undefined) | undefined;
+}
+declare function createLoomyAdapter(catalog: LoomyCatalog, shim: LoomyShim, services: LoomyAdapterServices): LoomyAdapter;
 //#endregion
 //#region src/upstream.d.ts
 declare const LOOMY_API_BASE = "https://loomyad.xunfei.cn/api/v1";

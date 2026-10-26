@@ -151,7 +151,12 @@ export function apply(ctx: Context, config: ConfigShape = {}): void {
   ctx.effect(() => () => { closed = true; void shim.close() })
   void shim.ready.then(async () => {
     if (closed) return
-    const loomy = createLoomyAdapter(catalog, shim)
+    const loomy = createLoomyAdapter(catalog, shim, {
+      // Resolved per request: a headless profile mounts neither service, and
+      // even a browser profile may load them after this plugin starts.
+      attachments: () => ctx.get('attachments'),
+      processPathFromHostPath: hostPath => ctx.get('fs')?.processPathFromHostPath(hostPath),
+    })
     const releaseAdapter = ctx.llm.registerAdapter([LOOMY_PROVIDER], loomy.adapter)
     const releaseDirectory = ctx.llm.registerConfigurableProviders([{
       provider: LOOMY_PROVIDER,
