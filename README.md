@@ -10,6 +10,8 @@
 
 插件以只读方式读取 Loomy 落盘的登录态与模型清单，不复制、不上传、不改写任何文件。
 
+> **注意**：与上游 [gdrpzym/dsh-loomy-connect](https://github.com/gdrpzym/dsh-loomy-connect) 注册的是同一个 `loomy` provider，**两者不能同时安装**。从上游迁移时先卸载再装本分支。
+
 | 能力 | 位置 | 说明 |
 |---|---|---|
 | 模型 Provider | 宿主端 | 注册 `loomy` provider，模型列表在启动时从 Loomy 发现 |
@@ -37,6 +39,8 @@
 - **账号与积分**：插件页顶部状态行显示当前登录账号（脱敏手机号），「积分」标签页显示永久积分与每日赠送积分——数值取自 Loomy 自身展示所依赖的同一份数据。
 - **模型明细**：插件页的「模型」标签页以三列表格列出每个模型的名称、上下文窗口大小（若 Loomy 的清单提供了该字段）与积分倍率，图像模型排在文本模型之后。
 - **模型页状态条**：「设置 → 模型」的 Loomy 卡片内直接显示登录态与永久积分。
+- **逐模型开关**：在 `llm-loomy` 行配置页可逐个启用或禁用模型；被禁用的模型不再出现在 DSH 的模型选择器中，改动即时生效、无需重启。
+- **图片输入**：支持向模型发送图片，由宿主的 attachment 服务转成请求内的图像内容。
 - **中英双语**：界面文案跟随 DSH 界面语言。
 
 ## 界面位置（DSH 0.2.1）
@@ -44,19 +48,29 @@
 | 位置 | 内容 |
 |---|---|
 | 设置 → 插件 → **DSH Loomy Connect** | 账号、积分、模型表、手动刷新 |
-| 该插件的 **llm-loomy** 行 → 配置页 | `authFile` / `configFile` 路径覆盖，可保存并立即生效 |
+| 该插件的 **llm-loomy** 行 → 配置页 | `authFile` / `configFile` 路径覆盖；页面下方为「禁用的模型」开关，可保存并立即生效 |
 | 设置 → 模型 → **Loomy** 卡片 | 精简状态条（登录态、永久积分、刷新） |
 
 ## 安装
 
 | | |
 |---|---|
-| **Loomy 桌面应用** | 已安装，且至少登录过一次 |
+| **Loomy 桌面应用** | 已安装，且至少登录过一次（插件读取其落盘的登录态，无桌面端则无凭据可用） |
 | **DeepSeek Harness** | `>= 0.2.1-rc.2 < 0.3.0` |
 | **Node.js** | `>= 22.19` |
 | **pnpm** | 必需。`dsh plugin` 内部通过 pnpm 管理 profile 依赖，只装有 npm 不够 |
 
-### 从 GitHub 安装（推荐）
+### 从插件市场安装（推荐）
+
+DSH 的 **插件 → 插件市场** 里搜索 `loomy`，或直接打开条目页：
+
+```
+https://awesome-dsh-plugin.com/p/2239058652/dsh-loomy-connect/
+```
+
+本仓库已收录进 [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin) 精选列表，市场会自动同步。
+
+### 从 GitHub 安装
 
 ```sh
 dsh plugin --profile web add github:2239058652/dsh-loomy-connect
@@ -127,6 +141,8 @@ dsh --profile web --dump-config     # 应出现 llm-loomy 条目
 - 模型清单与倍率取自 Loomy 的接口；接口不可达时回落到 Loomy 生成的配置文件，两者都不可用时才使用内置快照。
 - 积分读自 Loomy 的本地缓存，Loomy 未公开积分接口；缓存不存在时卡片不显示积分，而非显示 0。
 - 模型清单在启动时读取，Loomy 侧增删模型后需重启 DSH 才会同步。
+- 图片输入需要宿主提供 attachment 服务（`@deepseek-ai/dsh-attachment` 的默认组合已内置）；未挂载该服务的 headless 组合下，含图片的请求会被拒绝。
+- 与上游 [gdrpzym/dsh-loomy-connect](https://github.com/gdrpzym/dsh-loomy-connect) 注册同一个 `loomy` provider，**不能同时安装**；两者切换时需先卸载再装。
 - Windows 下若登录态路径未被探测到，需通过 `LOOMY_AUTH_FILE` 手动指定。
 
 ## 故障排查

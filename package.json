@@ -1,7 +1,7 @@
 {
   "name": "dsh-loomy-connect",
   "displayName": "DSH Loomy Connect",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Use the models included with the Loomy desktop app in DeepSeek Harness with no configuration.",
   "type": "module",
   "main": "lib/index.js",

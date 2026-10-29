@@ -10,6 +10,8 @@ Exposes the text models bundled with the **Loomy** desktop app to [DeepSeek Harn
 
 The plugin reads Loomy's on-disk sign-in session and model manifest read-only. Nothing is copied, uploaded, or rewritten.
 
+> **Note**: this fork and the upstream [gdrpzym/dsh-loomy-connect](https://github.com/gdrpzym/dsh-loomy-connect) register the same `loomy` provider and **cannot be installed together**. Uninstall one before installing the other.
+
 | Contribution | Surface | Description |
 |---|---|---|
 | Model provider | Host | Registers a `loomy` provider; the model list is discovered from Loomy at startup |
@@ -37,6 +39,8 @@ The plugin reads Loomy's on-disk sign-in session and model manifest read-only. N
 - **Account and credits**: the page's status row shows the signed-in account (masked phone); the **Points** tab shows long-lived and daily credits — read from the same data Loomy's own UI renders from.
 - **Model details**: the **Models** tab renders a three-column table of each model's name, context window (when Loomy's list provides it), and points rate; image models are listed after the chat models.
 - **Models-page status bar**: the Loomy card under Settings → Models shows sign-in state and the permanent balance inline.
+- **Per-model switch**: each model can be enabled or disabled on the `llm-loomy` row configuration page; a disabled model stops appearing in DSH's model selector, and the change applies without a restart.
+- **Image input**: images can be sent to the models, converted by the host's attachment service into image content on the request.
 - **Bilingual**: UI copy follows the DSH interface language.
 
 ## Where it appears (DSH 0.2.1)
@@ -44,19 +48,29 @@ The plugin reads Loomy's on-disk sign-in session and model manifest read-only. N
 | Location | Content |
 |---|---|
 | Settings → Plugins → **DSH Loomy Connect** | Account, points, model table, manual refresh |
-| That plugin's **llm-loomy** row → configuration page | `authFile` / `configFile` overrides, saved and applied live |
+| That plugin's **llm-loomy** row → configuration page | `authFile` / `configFile` overrides; the page ends with the disabled-models switch, saved and applied live |
 | Settings → Models → **Loomy** card | Compact status line (sign-in, permanent points, refresh) |
 
 ## Installation
 
 | | |
 |---|---|
-| **Loomy desktop app** | Installed and signed in at least once |
+| **Loomy desktop app** | Installed and signed in at least once (the plugin reads the session it writes; without the app there is no credential to read) |
 | **DeepSeek Harness** | `>= 0.2.1-rc.2 < 0.3.0` |
 | **Node.js** | `>= 22.19` |
 | **pnpm** | Required. `dsh plugin` manages profile dependencies through pnpm; having only npm is not enough |
 
-### From GitHub (recommended)
+### From the plugin market (recommended)
+
+Search for `loomy` under **Plugins → Plugin market** in DSH, or open the entry directly:
+
+```
+https://awesome-dsh-plugin.com/p/2239058652/dsh-loomy-connect/
+```
+
+This repository is listed in [awesome-dsh-plugin](https://github.com/awesome-dsh-plugin/awesome-dsh-plugin); the market picks it up automatically.
+
+### From GitHub
 
 ```sh
 dsh plugin --profile web add github:2239058652/dsh-loomy-connect
@@ -127,6 +141,8 @@ Threat model: protects against other local processes and against web pages runni
 - The model list and its rates come from Loomy's API; when it is unreachable the plugin falls back to Loomy's generated config, and only then to a built-in snapshot.
 - Credits are read from Loomy's local cache — Loomy exposes no credits endpoint. When no cache exists the card omits credits rather than showing 0.
 - The model manifest is read at startup; restart DSH after Loomy adds or removes models.
+- Image input needs the host's attachment service (the default `@deepseek-ai/dsh-attachment` composition provides it); in a headless composition without it, requests carrying images are refused.
+- This fork and the upstream [gdrpzym/dsh-loomy-connect](https://github.com/gdrpzym/dsh-loomy-connect) register the same `loomy` provider and **cannot be installed together**; switching between them requires an uninstall first.
 - If the sign-in path is not detected on Windows, set `LOOMY_AUTH_FILE` explicitly.
 
 ## Troubleshooting
